@@ -42,7 +42,7 @@ class SimpleTokenizer:
 
     def build_vocab(self, sentences):
 
-        #build the voacbulary fromt he list of the sentence
+        #build the voacbulary from the list of the sentence
         for sentence in sentences:
 
             words = self.clean_and_split(sentence)
@@ -98,7 +98,7 @@ class SimpleTokenizer:
     """
     def decode(self, token_ids, skip_special=True):
 
-        decoded_word=[]
+        decoded_words=[]
 
         for idx in token_ids:
 
@@ -128,3 +128,12 @@ class SimpleTokenizer:
         sentence = re.sub(r"\s+([.,!?])", r"\1", sentence)
 
         return sentence
+
+
+if __name__ == "__main__":
+    tokenizer = SimpleTokenizer()
+    tokenizer.build_vocab(["Hello, world!", "Hello there."])
+
+    encoded = tokenizer.encode("Hello, world!")
+    print(encoded)
+    print(tokenizer.decode(encoded))
