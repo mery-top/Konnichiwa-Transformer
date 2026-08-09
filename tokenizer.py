@@ -53,3 +53,35 @@ class SimpleTokenizer:
                     self.idx2word[new_idx] = word
         print(f"Vocabulary built! Total size: {len(self.vocab)}")
 
+
+    """
+    The main purpose of encode() is to convert a sentence into numbers.
+
+    word2idx = {
+    "<sos>": 0,
+    "<eos>": 1,
+    "<unk>": 2,
+    "i": 3,
+    "am": 4,
+    "happy": 5
+}
+    """
+
+    def encode(self, sentence, add_special_tokens=True):
+        words = self.clean_and_split(sentence)
+        token_ids=[]
+
+        #convert each word to an id
+        for word in words:
+            if word in self.word2idx:
+                token_ids.append(self.word2idx[word])
+            else: #insert the unk token
+                token_ids.append(self.word2idx[self.unk_token])
+
+        # Add <sos> at the beginning and <eos> at the end
+
+        if add_special_tokens:
+            token_ids.insert(0, self.word2idx[self.sos_token])
+            token_ids.append(self.word2idx[self.eos_token])
+
+        return token_ids
