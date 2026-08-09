@@ -74,10 +74,61 @@ class TranslationDataset(Dataset):
             dtype = torch.long
         )
 
+        #add masks
+
+        """
+                     batch   heads   tokens
+                      ↓       ↓       ↓
+        src_mask =   ( 1,      1,    seq_len ) used for broadcasting same mask
+        """
+
+
+        #source mask shape: (1, 1, max_seq_len)
+        src_mask = (src_tensor != self.src_pad_id).unsqueeze(0).unsqueeze(0) # add 2d
+
+        #target mask shape: shape: (1, 1, max_seq_len)
+        tgt_pad_mask = (tgt_input_tensor !=self.tgt_pad_id).unsqueeze(0).unsqueeze(0)
+
+
+        """
+                     I     love   cats   today
+           
+            I            ✓      ✗      ✗      ✗
+            love         ✓      ✓      ✗      ✗
+            cats         ✓      ✓      ✓      ✗
+            today        ✓      ✓      ✓      ✓
+
+            upper triangular matrix -> look ahead mask to prevent future prediction
+
+            (4, 4)
+            ↓
+            (1, 4, 4)
+
+            So:
+
+            (1, max_seq_len, max_seq_len)
+        """
+
+
+        casual_mask = torch.triu(
+            torch.ones((self.max_seq_len, self.max_seq_len)),
+            diagonal = 1
+        ) == 0
+
+        casual_mask = casual_mask.unsqueeze(0) # shape (1, maxlen, maxlen)
+
+        tgt_mask = tgt_pad_mask & casual_mask # a position is allowed when both masks are true
+
+
+
         return {
             "src": src_tensor,
             "tgt_input": tgt_input_tensor,
             "tgt_label": tgt_label_tensor,
+            "src_mask": src_mask,
+            "tgt_mask": tgt_mask,
+            "src_text": src_text,
+            "tgt_text": tgt_text
         }
 
 if __name__ == "__main__":
