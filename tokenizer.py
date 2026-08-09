@@ -90,3 +90,41 @@ class SimpleTokenizer:
         return token_ids
 
     
+    """
+    decode -> converts token ids to words
+    [3, 4, 5]
+     ↓
+    "I am happy"
+    """
+    def decode(self, token_ids, skip_special=True):
+
+        decoded_word=[]
+
+        for idx in token_ids:
+
+            #if idx is a tensor convert to normal number
+            if hasattr(idx, "item"):
+                idx = idx.item()
+
+            #convert id to word
+
+            if idx in self.idx2word:
+                word = self.idx2word[idx]
+            else: #stores all the new words as unk
+                word = self.unk_token
+
+
+            #skip special tokens
+            if skip_special and word in self.special_tokens:
+                continue
+            
+            decoded_words.append(word)
+
+
+        #join all words
+        sentence = " ".join(decoded_words)
+
+        # Remove extra space before punctuation
+        sentence = re.sub(r"\s+([.,!?])", r"\1", sentence)
+
+        return sentence
