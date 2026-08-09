@@ -12,7 +12,10 @@ class SimpleTokenizer:
         self.unk_token = "<unk>"
 
         #initial vocab and mappings
-        self.vocab = [self.pad_token, self.sos_token, self.eos_token, self.unk_token]
+        # Initial vocabulary containing only the special tokens
+        self.special_tokens = [self.pad_token, self.sos_token, self.eos_token, self.unk_token]
+        self.vocab = list(self.special_tokens)
+
         self.word2idx = {}
         self.idx2word = {}
 
@@ -85,3 +88,5 @@ class SimpleTokenizer:
             token_ids.append(self.word2idx[self.eos_token])
 
         return token_ids
+
+    
