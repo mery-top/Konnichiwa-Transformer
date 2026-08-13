@@ -2,6 +2,7 @@ import math
 import torch
 import torch.nn as nn
 
+#token_ids has shape (batch, sequence_length). This converts each integer ID into a learned vector, producing (batch, sequence_length, d_model).
 class InputEmbedding(nn.Module):
     def __init__(self, vocab_size, d_model):
         super().__init__() #runs the init of the nn.Model it intializes important functions of nn
@@ -84,3 +85,51 @@ class InputEmbedding(nn.Module):
 
     def forward(self, token_ids):
         return self.embedding(token_ids) * math.sqrt(self.d_model) #to reduce the effect of positional encoding
+
+class PositionalEncoding(nn.Module):
+    #in notebook 
+    def __init__(self, d_model, max_seq_length=5000, dropout= 0.1):
+        super().__init__()
+        self.dropout = nn.Dropout(dropout) #to reduce overfitting
+
+
+        """
+                           d_model = 6
+                           ↓ ↓ ↓ ↓ ↓ ↓
+
+            position 0 →  [a b c d e f]
+            position 1 →  [g h i j k l]
+            position 2 →  [m n o p q r]
+            position 3 →  [s t u v w x]
+            ...
+            position 4999
+        """
+        pe = torch.zeros(max_seq_length, d_model)
+        position = torch.arrange(max_seq_len, dtype = torch.float).unsqueeze(1)
+
+        #apply the base div term for sine and cosine formula
+        div_term = torch.exp(
+            torch.arrange(0, d_model, 2).float()
+            * (-math.log(10000.0)/d_model)
+        )
+
+        pe[:, 0::2] = torch.sin(position *div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+
+        #this tensor belongs to my model, but don't calculate/train gradients for it.
+        self.register_buffer("pe", unsqueeze(0))
+    
+
+    def forward(self, x):
+        #Add embedding + posiitional embedding
+        """
+
+        Sentence 1:
+            embedding + positional encoding
+
+        Sentence 2:
+            embedding + SAME positional encoding
+        """
+        x = x+ self.pe[:, :x.size(1)]
+        return self.droupout(x)
+        
