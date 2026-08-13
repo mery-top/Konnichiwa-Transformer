@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 
 #token_ids has shape (batch, sequence_length). This converts each integer ID into a learned vector, producing (batch, sequence_length, d_model).
-class InputEmbedding(nn.Module):
+class InputEmbeddings(nn.Module):
     def __init__(self, vocab_size, d_model):
         super().__init__() #runs the init of the nn.Model it intializes important functions of nn
         self.d_model = d_model
@@ -105,11 +105,11 @@ class PositionalEncoding(nn.Module):
             position 4999
         """
         pe = torch.zeros(max_seq_length, d_model)
-        position = torch.arrange(max_seq_len, dtype = torch.float).unsqueeze(1)
+        position = torch.arange(0, max_seq_length, dtype = torch.float).unsqueeze(1)
 
         #apply the base div term for sine and cosine formula
         div_term = torch.exp(
-            torch.arrange(0, d_model, 2).float()
+            torch.arange(0, d_model, 2).float()
             * (-math.log(10000.0)/d_model)
         )
 
@@ -117,7 +117,8 @@ class PositionalEncoding(nn.Module):
         pe[:, 1::2] = torch.cos(position * div_term)
 
         #this tensor belongs to my model, but don't calculate/train gradients for it.
-        self.register_buffer("pe", unsqueeze(0))
+        pe = pe.unsqueeze(0)
+        self.register_buffer("pe", pe)
     
 
     def forward(self, x):
@@ -131,5 +132,143 @@ class PositionalEncoding(nn.Module):
             embedding + SAME positional encoding
         """
         x = x+ self.pe[:, :x.size(1)]
-        return self.droupout(x)
+        return self.dropout(x)
+
+
+class LayerNormalization(nn.Module):
+
+    """
+    Formula: y = gamma * (x - mean) / sqrt(var + eps) + beta
+
+    gamma = scale we multiply here
+    shift = add 
+    """
+
+    def __init__(self, features, eps=1e-6):
+        super().__init__()
+        self.gamma = nn.Parameter(torch.ones(features))
+        self.beta = nn.Parameter(torch.zeros(features))
+        self.eps = eps
+
+    #mean and variance are recalculated for every token
+    def forward(self,x):
+
+        """
+        LayerNorm with:
+
+        dim=-1
+
+
+        normalizes each token separately.
+
+        So:
+
+        Token 1:
+        [2,4,6,8]
+        ↓
+        normalize
+
+        Token 2:
+        [1,3,5,7]
+        ↓
+        normalize
+
+        Token 3:
+        [10,20,30,40]
+        ↓
+        normalize
+        """
+        mean = x.mean(dim=-1, keepdim=True)
+        variance= x.var(dim=-1, keepdim=True, unbiased=False) #div by N
+        normalized = (x - mean)/torch.sqrt(variance + self.eps)
+        return self.gamma * normalized + self.beta
+
+
+
+    """
+
+             Q       K       V
+             │       │       │
+             │       │       │
+             └─── Q × Kᵀ ───┘
+                    │
+                    ▼
+             Divide by √dₖ
+                    │
+                    ▼
+                 Mask
+                    │
+                    ▼
+                 Softmax
+                    │
+                    ▼
+            Attention Weights
+                    │
+                    │
+                    ▼
+             Weights × V
+                    │
+                    ▼
+                 OUTPUT
+
+    """
+
+
+"""
+Applying the attention formula from the paper
+"""
+class ScaledDotProductAttention(nn.Module):
+    def __init__(self, dropout=0.1):
+        super().__init__()
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, q,k,v,mask=None):
+
+        #last dimension of the query
+        d_k = q.size(-1)
+
+        # k.transpose(-2, -1) swaps the last two dimensions to shape (batch, heads, d_k, seq_len_k)
+        # scores shape: (batch, heads, seq_len_q, seq_len_k)
+
+        scores = torch.matmul(q, k.transpose(-2,-1))
+        scores = scores / math.sqrt(d_k)
+
+        if mask is not None:
+            scores = scores.masked_fill(mask == 0, -1e9)
         
+
+        #convert weights to probabilities
+        weights = torch.softmax(scores, dim=-1)
+        weights = self.dropout(weights)
+
+
+        #multiply the weights with the value
+        # output shape: (batch, heads, seq_len_q, d_k)
+        output = torch.matmul(weights, v)
+
+        return output, weights
+
+
+if __name__ == "__main__":
+    attention = ScaledDotProductAttention(dropout=0.0)
+
+    q = torch.randn(1, 1, 3, 4)
+    k = torch.randn(1, 1, 3, 4)
+    v = torch.randn(1, 1, 3, 4)
+
+    output, weights = attention(q, k, v)
+
+    print("Output:", output.shape)
+    print("Weights:", weights.shape)
+    print("Row sums:", weights.sum(dim=-1))
+    
+
+#Embedding CHeck with Normalization
+# if __name__ == "__main__":
+#     tokens = torch.tensor([[1, 4, 7, 2]])
+#     embeddings = InputEmbeddings(vocab_size=10, d_model=8)
+#     positions = PositionalEncoding(d_model=8)
+#     normalization = LayerNormalization(features=8)
+
+#     output = normalization(positions(embeddings(tokens)))
+#     print(output.shape)
