@@ -249,19 +249,20 @@ class ScaledDotProductAttention(nn.Module):
         return output, weights
 
 
-if __name__ == "__main__":
-    attention = ScaledDotProductAttention(dropout=0.0)
+# ScaledDotProductAttention Check
+# if __name__ == "__main__":
+#     attention = ScaledDotProductAttention(dropout=0.0)
 
-    q = torch.randn(1, 1, 3, 4)
-    k = torch.randn(1, 1, 3, 4)
-    v = torch.randn(1, 1, 3, 4)
+#     q = torch.randn(1, 1, 3, 4)
+#     k = torch.randn(1, 1, 3, 4)
+#     v = torch.randn(1, 1, 3, 4)
 
-    output, weights = attention(q, k, v)
+#     output, weights = attention(q, k, v)
 
-    print("Output:", output.shape)
-    print("Weights:", weights.shape)
-    print("Row sums:", weights.sum(dim=-1))
-    
+#     print("Output:", output.shape)
+#     print("Weights:", weights.shape)
+#     print("Row sums:", weights.sum(dim=-1))
+
 
 #Embedding CHeck with Normalization
 # if __name__ == "__main__":
