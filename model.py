@@ -433,7 +433,61 @@ class PositionWiseFeedForward(nn.Module):
          return self.linear_2(x)
 
 
+"""
+    ENCODER LAYER
+        Input
 
+        ↓
+
+        Self-Attention
+
+        ↓
+
+        Add original input + attention result
+
+        ↓
+
+        Layer Normalization
+
+        ↓
+
+        Feed-Forward Network
+
+        ↓
+
+        Add previous result + FFN result
+
+        ↓
+
+        Layer Normalization
+
+        ↓
+
+Output
+"""
+class EncoderLayer(nn.Module):
+    def __init__(self, d_model, num_heads, d_ff, dropout=0.1):
+        super().__init__()
+        self.self_attention = MultiHeadAttention(d_model, num_heads, dropout)
+        self.feed_forward = PositionWiseFeedForward(d_model, d_ff, dropout)
+
+        self.norm_1 = LayerNormalization(d_model)
+        self.norm_2 = LayerNormalization(d_model)
+        self.dropout = nn.Dropout(dropout)
+
+
+    def forward(self, x , src_mask):
+        attention_output = self.self_attention(x,x,x, src_mask)
+        x = self.norm_1(x+ self.dropout(attention_output))
+
+        feed_forward_output = self.feed_forward(x)
+        x= self.norm_2(x + self.dropout(feed_forward_output))
+
+        return x #is the residual to maintain the original info
+
+
+
+ 
 
 
 
