@@ -15,9 +15,9 @@ class TranslationDataset(Dataset):
 
     def __init__(self, sentence_pairs, src_tokenizer, tgt_tokenizer, max_seq_len=20):
 
-        self.pairs = sentence_pairs #eng-french pairs on a list
+        self.pairs = sentence_pairs #eng-japanese pairs on a list
         self.src_tokenizer = src_tokenizer # convert eng to token ids
-        self.tgt_tokenizer = tgt_tokenizer #convert french to token ids
+        self.tgt_tokenizer = tgt_tokenizer #convert japanese to token ids
 
         self.max_seq_len = max_seq_len #for batching we make the sentence to be same len
 
