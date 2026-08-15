@@ -561,7 +561,7 @@ class DecoderLayer(nn.Module):
     def forward(self, x, encoder_output, src_mask, tgt_mask):
 
         self_attention_output = self.self_attention(x,x,x, tgt_mask)
-        x = self.norm1(x + self.dropout(self_attention_output))
+        x = self.norm_1(x + self.dropout(self_attention_output))
 
 
         #Look at the original input through the encoder
@@ -599,6 +599,23 @@ class Decoder(nn.Module):
         return self.norm(x)
 
 
+# Encoder and decoder check
+# if __name__ == "__main__":
+#     encoder = Encoder(8, 2, 16, num_layers=2, dropout=0.0)
+#     decoder = Decoder(8, 2, 16, num_layers=2, dropout=0.0)
+
+#     english = torch.randn(2, 4, 8)
+#     japanese = torch.randn(2, 4, 8)
+
+#     src_mask = torch.ones(2, 1, 1, 4, dtype=torch.bool)
+#     tgt_mask = torch.tril(torch.ones(4, 4, dtype=torch.bool))
+#     tgt_mask = tgt_mask.unsqueeze(0).expand(2, -1, -1)
+
+#     encoder_output = encoder(english, src_mask)
+#     decoder_output = decoder(japanese, encoder_output, src_mask, tgt_mask)
+
+#     print(encoder_output.shape)
+#     print(decoder_output.shape)
 
 
 
