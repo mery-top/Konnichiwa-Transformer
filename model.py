@@ -678,21 +678,32 @@ class Transformer(nn.Module):
         decoder_output = self.decode(
             tgt, encoder_output, src_mask, tgt_mask
         )
-        
+
         return self.output_projection(decoder_output)
 
+# Assembled Transformer Check
+# if __name__ == "__main__":
+#     model = Transformer(
+#         src_vocab_size=20,
+#         tgt_vocab_size=25,
+#         d_model=8,
+#         num_heads=2,
+#         d_ff=16,
+#         num_layers=2,
+#         dropout=0.0,
+#     )
 
+#     src = torch.tensor([[1, 4, 5, 2, 0]])
+#     tgt = torch.tensor([[1, 6, 7, 2, 0]])
 
+#     src_mask = (src != 0).unsqueeze(1).unsqueeze(2)
 
+#     target_padding_mask = (tgt != 0).unsqueeze(1).unsqueeze(2)
+#     causal_mask = torch.tril(torch.ones(5, 5, dtype=torch.bool))
+#     tgt_mask = target_padding_mask & causal_mask.unsqueeze(0)
 
-
-
-
-
-
-
-
-
+#     logits = model(src, tgt, src_mask, tgt_mask)
+#     print(logits.shape)
 
 
 # Encoder and decoder check
