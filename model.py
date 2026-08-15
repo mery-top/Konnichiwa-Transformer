@@ -524,7 +524,63 @@ class Encoder(nn.Module):
             x = layer(x, src_mask)
         
         return self.norm(x)
-        
+
+"""
+              Decoder Layer
+                    │
+        ┌───────────┴───────────┐
+        ↓                       │
+  Masked Self-Attention    with tgt mask            
+        ↓                       │
+  Add + Normalize               │
+        ↓                       │
+  Cross-Attention               │
+        ↓                       │
+  Add + Normalize               │
+        ↓                       │
+  Feed Forward                  │
+        ↓                       │
+  Add + Normalize               │
+        ↓                       │
+      Output
+"""
+
+class DecoderLayer(nn.Module):
+    def __init__(self, d_model, num_heads, d_ff, dropout = 0.1):
+        super().__init__()
+
+        self.self_attention = MultiHeadAttention(d_model, num_heads, dropout)
+        self.cross_attention = MultiHeadAttention(d_model, num_heads, dropout) #again do attention based on encoder input
+        self.feed_forward = PositionWiseFeedForward(d_model, d_ff, dropout)
+
+        self.norm_1 = LayerNormalization(d_model)
+        self.norm_2 = LayerNormalization(d_model)
+        self.norm_3 = LayerNormalization(d_model)
+        self.dropout = nn.Dropout(dropout)
+
+    def forward(self, x, encoder_output, src_mask, tgt_mask):
+
+        self_attention_output = self.self_attention(x,x,x, tgt_mask)
+        x = self.norm1(x + self.dropout(self_attention_output))
+
+
+        #Look at the original input through the encoder
+        cross_attention_output = self.cross_attention(
+            x, encoder_output, encoder_output, src_mask
+        )
+
+        x = self.norm_2(x + self.dropout(cross_attention_output))
+
+        feed_forward_output = self.feed_forward(x)
+
+        x = self.norm_3(x + self.dropout(feed_forward_output))
+
+
+        return x
+
+
+
+
 
 # Encoder layer check
 # if __name__ == "__main__":
