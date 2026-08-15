@@ -344,12 +344,12 @@ Token 9    │ 64 nums │   │ 64 nums │   │ 64 nums │
     def __init__(self, d_model, num_heads, dropout=0.1):
         super().__init__()
 
-        assert d_model % num_heads = 0 #to equally divide heads among all dimensions
+        assert d_model % num_heads == 0 #to equally divide heads among all dimensions
 
 
         self.d_model = d_model
-        self.num_model = num_model
-        self.d_k = d_model // num_model #divide dimensions under each head
+        self.num_heads = num_heads
+        self.d_k = d_model // num_heads #divide dimensions under each head
 
         #add linear tranformation with the bias
         self.w_q = nn.Linear(d_model, d_model)
@@ -385,7 +385,18 @@ Token 9    │ 64 nums │   │ 64 nums │   │ 64 nums │
 
 
 
+if __name__ == "__main__":
+    multi_head_attention = MultiHeadAttention(
+        d_model=8,
+        num_heads=2,
+        dropout=0.0,
+    )
 
+    x = torch.randn(2, 4, 8)
+    output = multi_head_attention(x, x, x)
+
+    print(output.shape)
+    print(multi_head_attention.attention_weights.shape)
 
 
 
