@@ -3,13 +3,12 @@ from torch.utils.data import Dataset
 
 PAIRS = [
     # Greetings & Common Phrases
-    ("hello.", "bonjour."),
-    ("good morning.", "bonjour."),
-    ("good evening.", "bonsoir."),
-    ("how are you?", "comment ça va?"),
-    ("i am fine.", "ça va bien."),
-    ("thank you.", "merci."),
-
+    ("hello.", "こんにちは。"),
+    ("good morning.", "おはようございます。"),
+    ("good evening.", "こんばんは。"),
+    ("how are you?", "お元気ですか？"),
+    ("i am fine.", "元気です。"),
+    ("thank you.", "ありがとうございます。"),
 ]
 
 class TranslationDataset(Dataset):
