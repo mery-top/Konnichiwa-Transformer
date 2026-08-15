@@ -599,6 +599,102 @@ class Decoder(nn.Module):
         return self.norm(x)
 
 
+"""
+Assembled Transformer
+"""
+class Transformer(nn.Module):
+    def __init__(self, src_vocab_size, tgt_vocab_size, d_model=512, num_heads = 8, d_ff = 2048,
+    num_layers = 6, dropout = 0.1):
+        super().__init__()
+
+        self.src_embedding = InputEmbeddings(src_vocab_size, d_model)
+        self.tgt_embedding = InputEmbeddings(tgt_vocab_size, d_model)
+
+        self.src_position = PositionalEncoding(d_model, dropout=dropout)
+        self.tgt_position = PositionalEncoding(d_model, dropout=dropout)
+
+        self.encoder = Encoder(
+            d_model, num_heads, d_ff, num_layers, dropout
+        )
+        self.decoder = Decoder(
+            d_model, num_heads, d_ff, num_layers, dropout
+        )
+
+        """
+        Vocabulary:
+
+        0 = I
+        1 = am
+        2 = a
+        3 = student
+        4 = cat
+
+        The decoder produces:
+
+        [0.2, -0.5, 0.8, 0.1, 0.3]
+
+        After output projection:
+
+        [1.2, 0.4, 3.5, 0.2, 0.8]
+
+        These are called logits.
+
+        The model is basically saying:
+
+        I       → 1.2
+        am      → 0.4
+        a       → 3.5  ← highest
+        student → 0.2
+        cat     → 0.8
+
+        After applying softmax:
+
+        I       → 0.10
+        am      → 0.05
+        a       → 0.65  ← highest probability
+        student → 0.04
+        cat     → 0.16
+
+        So the model predicts:
+
+        "a"
+        """
+        self.output_projection = nn.Linear(d_model, tgt_vocab_size)
+    
+
+    def encode(self, src, src_mask):
+        src = self.src_embedding(src)
+        src = self.src_position(src)
+        return self.encoder(src, src_mask)
+
+    def decode(self, tgt, encoder_output, src_mask, tgt_mask):
+        tgt = self.tgt_embedding(tgt)
+        tgt = self.tgt_position(tgt)
+
+        return self.decoder(tgt, encoder_output, src_mask, tgt_mask)
+    
+    def forward(self, src, tgt, src_mask, tgt_mask):
+        encoder_output = self.encode(src, src_mask)
+        decoder_output = self.decode(
+            tgt, encoder_output, src_mask, tgt_mask
+        )
+        
+        return self.output_projection(decoder_output)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Encoder and decoder check
 # if __name__ == "__main__":
 #     encoder = Encoder(8, 2, 16, num_layers=2, dropout=0.0)
