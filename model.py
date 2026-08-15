@@ -384,19 +384,53 @@ Token 9    │ 64 nums │   │ 64 nums │   │ 64 nums │
         return self.w_o(joined_heads)
 
 
+"""
 
-if __name__ == "__main__":
-    multi_head_attention = MultiHeadAttention(
-        d_model=8,
-        num_heads=2,
-        dropout=0.0,
-    )
+                Position-wise Feed Forward Network
 
-    x = torch.randn(2, 4, 8)
-    output = multi_head_attention(x, x, x)
+Input
+  │
+  │ (batch, seq_len, 512)
+  ▼
+┌─────────────────┐
+│ Linear(512,2048)│ increases the dimension for more learning space
+└─────────────────┘
+  │
+  │ (batch, seq_len, 2048)
+  ▼
+┌─────────────────┐
+│      ReLU       │ it provides the non lineraity(max, 0)
+└─────────────────┘
+  │
+  ▼
+┌─────────────────┐
+│     Dropout     │
+└─────────────────┘
+  │
+  │ (batch, seq_len, 2048)
+  ▼
+┌─────────────────┐
+│ Linear(2048,512)│
+└─────────────────┘
+  │
+  │ (batch, seq_len, 512)
+  ▼
+Output
 
-    print(output.shape)
-    print(multi_head_attention.attention_weights.shape)
+"""
+class PositionWiseFeedForward(nn.Module):
+    def __init__(self, d_model, d_ff, dropout=0.1):
+        super().__init__()
+        self.linear_1 = nn.Linear(d_model, d_ff)
+        self.relu = nn.ReLU() #Applies non linearity
+        self.dropout = nn.Dropout(dropout)
+        self.linear_2 = nn.Linear(d_ff, d_model)
+
+    def forward(self, x):
+         x = self.linear_1(x)
+         x = self.relu(x)
+         x = self.dropout(x)
+         return self.linear_2(x)
 
 
 
@@ -426,6 +460,46 @@ if __name__ == "__main__":
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#Multihead attention Check
+# if __name__ == "__main__":
+#     multi_head_attention = MultiHeadAttention(
+#         d_model=8,
+#         num_heads=2,
+#         dropout=0.0,
+#     )
+
+#     x = torch.randn(2, 4, 8)
+#     output = multi_head_attention(x, x, x)
+
+#     print(output.shape)
+#     print(multi_head_attention.attention_weights.shape)
 
 
 # ScaledDotProductAttention Check
