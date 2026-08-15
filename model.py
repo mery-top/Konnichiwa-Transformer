@@ -487,6 +487,60 @@ class EncoderLayer(nn.Module):
 
 
 
+"""
+    ENCODER STACK
+        Input
+        ↓
+        EncoderLayer 1
+        ↓
+        EncoderLayer 2
+        ↓
+        EncoderLayer 3
+        ↓
+        ...
+        ↓
+        EncoderLayer N
+        ↓
+        LayerNorm
+        ↓
+        Output
+"""
+
+class Encoder(nn.Module):
+    def __init__(self, d_model, num_heads, d_ff, num_layers, dropout=0.1):
+        super().__init__()
+
+        self.layers = nn.ModuleList()
+
+        for i in range(num_layers):
+            layer = EncoderLayer(d_model, num_heads, d_ff, dropout)
+            self.layers.append(layer)
+        
+        self.norm = LayerNormalization(d_model)
+
+    
+    def forward(self, x, src_mask):
+        for layer in self.layers:
+            x = layer(x, src_mask)
+        
+        return self.norm(x)
+        
+
+# Encoder layer check
+# if __name__ == "__main__":
+#     layer = EncoderLayer(
+#         d_model=8,
+#         num_heads=2,
+#         d_ff=16,
+#         dropout=0.0,
+#     )
+
+#     x = torch.randn(2, 4, 8)
+#     src_mask = torch.ones(2, 1, 1, 4, dtype=torch.bool)
+
+#     output = layer(x, src_mask)
+#     print(output.shape)
+
  
 
 
