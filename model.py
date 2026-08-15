@@ -579,6 +579,26 @@ class DecoderLayer(nn.Module):
         return x
 
 
+#Decoder stack
+class Decoder(nn.Module):
+    def __init__(self, d_model, num_heads, d_ff, num_layers, dropout=0.1):
+        super().__init__()
+
+        self.layers = nn.ModuleList()
+
+        for i in range(num_layers):
+            layer = DecoderLayer(d_model, num_heads, d_ff, dropout)
+            self.layers.append(layer)
+        
+        self.norm = LayerNormalization(d_model)
+
+    def forward(self, x, encoder_output, src_mask, tgt_mask):
+        for layer in self.layers:
+            x= layer(x, encoder_output, src_mask, tgt_mask)
+        
+        return self.norm(x)
+
+
 
 
 
