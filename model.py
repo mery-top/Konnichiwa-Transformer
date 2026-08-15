@@ -249,6 +249,163 @@ class ScaledDotProductAttention(nn.Module):
         return output, weights
 
 
+"""
+
+batch
+ ↓
+[32, 10, 8, 64]
+      ↑   ↑
+   tokens heads
+
+                  INPUT
+                    │
+                    │
+          q, k, v = [32, 10, 512]
+                    │
+          ┌─────────┼─────────┐
+          ↓         ↓         ↓
+         Wq        Wk        Wv
+          ↓         ↓         ↓
+       Query      Key       Value
+          │         │         │
+          ↓         ↓         ↓
+   [32,10,512] [32,10,512] [32,10,512]
+          │         │         │
+          ↓         ↓         ↓
+       split      split      split
+       heads      heads      heads
+          │         │         │
+          ↓         ↓         ↓
+ [32,8,10,64] [32,8,10,64] [32,8,10,64]
+          │         │         │
+          └─────────┼─────────┘
+                    ↓
+             ATTENTION
+                    │
+                    ↓
+             [32,8,10,64]
+                    │
+                    ↓
+             transpose
+                    │
+                    ↓
+             [32,10,8,64]
+                    │
+                    ↓
+             join the heads
+                    │
+                    ↓
+             [32,10,512]
+                    │
+                    ↓
+                   Wo
+                    │
+                    ↓
+             [32,10,512]
+                    │
+                    ↓
+                 OUTPUT
+
+"""
+class MultiHeadAttention(nn.Module):
+
+    """
+
+    Matrix representation
+
+                 HEAD 0       HEAD 1       HEAD 2    ... HEAD 7
+           ┌─────────┐   ┌─────────┐   ┌─────────┐
+Token 0    │ 64 nums │   │ 64 nums │   │ 64 nums │
+Token 1    │ 64 nums │   │ 64 nums │   │ 64 nums │
+Token 2    │ 64 nums │   │ 64 nums │   │ 64 nums │
+  ...      │   ...   │   │   ...   │   │   ...   │
+Token 9    │ 64 nums │   │ 64 nums │   │ 64 nums │
+           └─────────┘   └─────────┘   └─────────┘
+
+                        KEY
+                T0   T1   T2   T3  ... T9
+                ┌───────────────────────────
+        QUERY T0│ ?    ?    ?    ?   ... ?
+            T1│ ?    ?    ?    ?   ... ?
+            T2│ ?    ?    ?    ?   ... ?
+            T3│ ?    ?    ?    ?   ... ?
+            ⋮│ ⋮    ⋮    ⋮    ⋮
+            T9│ ?    ?    ?    ?   ... ?
+                └───────────────────────────
+
+        For example:
+
+                            KEY
+                        "The" "cat" "sat" "because" "it"
+                        ↓     ↓     ↓      ↓        ↓
+        QUERY "it"  →    0.02  0.70  0.03   0.05     0.20
+    """
+
+    def __init__(self, d_model, num_heads, dropout=0.1):
+        super().__init__()
+
+        assert d_model % num_heads = 0 #to equally divide heads among all dimensions
+
+
+        self.d_model = d_model
+        self.num_model = num_model
+        self.d_k = d_model // num_model #divide dimensions under each head
+
+        #add linear tranformation with the bias
+        self.w_q = nn.Linear(d_model, d_model)
+        self.w_k = nn.Linear(d_model, d_model)
+        self.w_v = nn.Linear(d_model, d_model)
+        self.w_o = nn.Linear(d_model, d_model)
+
+        self.attention = ScaledDotProductAttention(dropout)
+
+
+    def forward(self, q, k, v, mask=None):
+
+        batch_size = q.size(0)
+
+        query = self.w_q(q)
+        key = self.w_k(k)
+        value = self.w_v(v)
+
+        #-1 is for the token size
+        query = query.view(batch_size, -1, self.num_heads, self.d_k).transpose(2,1) # transpose head and the dimension
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ScaledDotProductAttention Check
 # if __name__ == "__main__":
 #     attention = ScaledDotProductAttention(dropout=0.0)
