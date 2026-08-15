@@ -369,8 +369,19 @@ Token 9    │ 64 nums │   │ 64 nums │   │ 64 nums │
         value = self.w_v(v)
 
         #-1 is for the token size
-        query = query.view(batch_size, -1, self.num_heads, self.d_k).transpose(2,1) # transpose head and the dimension
+        query = query.view(batch_size, -1, self.num_heads, self.d_k).transpose(1,2) # transpose head and the dimension
+        key = key.view(batch_size, -1, self.num_heads, self.d_k).transpose(1,2)
+        value = value.view(batch_size, -1, self.num_heads, self.d_k).transpose(1,2)
 
+
+        attention_output, self.attention_weights = self.attention(
+            query, key, value, mask
+        )
+
+        joined_heads = attention_output.transpose(1,2).contiguous()
+        joined_heads = joined_heads.view(batch_size, -1, self.d_model) #intial dimension size
+
+        return self.w_o(joined_heads)
 
 
 
