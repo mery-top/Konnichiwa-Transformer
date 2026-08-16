@@ -1,7 +1,7 @@
 # Konnichiwa Transformer
 ![Encoder-decoder architecture](new-arch/logo.png)
 
-A compact, educational Transformer implementation that learns Japanese-to-English phrase translation from scratch with PyTorch. The project exposes the building blocks normally hidden behind high-level libraries: tokenization, embeddings, positional encoding, multi-head attention, encoder/decoder stacks, masking, training, and autoregressive generation.
+A Transformer that learns Japanese-to-English phrase translation from scratch with PyTorch. The project exposes the building blocks normally hidden behind high-level libraries: tokenization, embeddings, positional encoding, multi-head attention, encoder/decoder stacks, masking, training, and autoregressive generation.
 
 > **Learning project:** The included corpus contains roughly 100 everyday phrases. The model is intended to demonstrate the Transformer workflow and to memorize or closely match examples in that corpus; it is not a general-purpose Japanese translator.
 
