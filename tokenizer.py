@@ -31,8 +31,10 @@ class SimpleTokenizer:
         #lower and remove spaces
         text = text.lower().strip()
 
-        #split the special char and add space before and after space
-        text = re.sub(r"([.,!?¿¡])", r" \1 ", text)
+        # Split both ASCII and Japanese sentence punctuation.  Without this,
+        # "こんにちは" and "こんにちは。" become different tokens, so a sentence
+        # entered without the exact training punctuation is treated as <unk>.
+        text = re.sub(r"([.,!?¿¡。！？])", r" \1 ", text)
 
         #change multiple spaces into one space
         text = re.sub(r"\s+", " ", text)
