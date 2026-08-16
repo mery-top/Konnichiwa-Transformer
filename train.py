@@ -199,13 +199,20 @@ def train_transformer():
 
         return tgt_tokenizer.decode(generated_ids)
 
-    for english, expected_japanese in PAIRS:
-        predicted_japanese = translate(english)
+    print("\nTraining complete. Type a Japanese sentence to translate.")
+    print("Type 'quit' to exit.\n")
 
-        print(f"English:  {english}")
-        print(f"Expected: {expected_japanese}")
-        print(f"Model:    {predicted_japanese}")
-        print("-" * 30)
+    while True:
+        sentence = input("Japanese: ").strip()
+
+        if sentence.lower() == "quit":
+            break
+
+        if not sentence:
+            continue
+
+        print("English:", translate(sentence))
+        print()
 
     
 
