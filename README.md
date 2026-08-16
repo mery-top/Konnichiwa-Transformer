@@ -22,7 +22,7 @@ A Transformer that learns Japanese-to-English phrase translation from scratch wi
 ### Transfomer Layers 
 ![Konnichiwa Transformer overview](new-arch/1.png)
 
-### Original Transformre Comparison 
+### Original Transformer Comparison 
 ![Attention and data flow](new-arch/3.png)
 
 
