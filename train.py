@@ -144,8 +144,70 @@ def train_transformer():
             average_loss = total_loss / len(loader)
             print(f"Epoch {epoch + 1}: loss = {average_loss:.4f}")
 
+    # INFERENCE FUNCTION (Properly indented inside train_transformer)
+    def translate(sentence):
+        model.eval()
 
+        with torch.no_grad():
+            src_ids = src_tokenizer.encode(sentence, add_special_tokens=True)
+            src_ids = src_ids[:MAX_SEQ_LEN]
+            src_ids += [src_tokenizer.word2idx[src_tokenizer.pad_token]] * (
+                MAX_SEQ_LEN - len(src_ids)
+            )
 
+            src = torch.tensor(src_ids, dtype=torch.long, device=device).unsqueeze(0)
+            src_mask = (src != src_tokenizer.word2idx[src_tokenizer.pad_token])
+            src_mask = src_mask.unsqueeze(1).unsqueeze(2)
+
+            encoder_output = model.encode(src, src_mask)
+
+            sos_id = tgt_tokenizer.word2idx[tgt_tokenizer.sos_token]
+            eos_id = tgt_tokenizer.word2idx[tgt_tokenizer.eos_token]
+            pad_id = tgt_tokenizer.word2idx[tgt_tokenizer.pad_token]
+
+            generated_ids = [sos_id]
+
+            for _ in range(MAX_SEQ_LEN - 1):
+                decoder_ids = generated_ids + [pad_id] * (
+                    MAX_SEQ_LEN - len(generated_ids)
+                )
+
+                tgt = torch.tensor(
+                    decoder_ids,
+                    dtype=torch.long,
+                    device=device,
+                ).unsqueeze(0)
+
+                padding_mask = (tgt != pad_id).unsqueeze(1).unsqueeze(2)
+                causal_mask = torch.tril(
+                    torch.ones(MAX_SEQ_LEN, MAX_SEQ_LEN, dtype=torch.bool, device=device)
+                )
+                tgt_mask = padding_mask & causal_mask.unsqueeze(0)
+
+                decoder_output = model.decode(
+                    tgt, encoder_output, src_mask, tgt_mask
+                )
+                logits = model.output_projection(decoder_output)
+
+                current_position = len(generated_ids) - 1
+                next_token_id = logits[0, current_position].argmax().item()
+
+                generated_ids.append(next_token_id)
+
+                if next_token_id == eos_id:
+                    break
+
+        return tgt_tokenizer.decode(generated_ids)
+
+    for english, expected_japanese in PAIRS:
+        predicted_japanese = translate(english)
+
+        print(f"English:  {english}")
+        print(f"Expected: {expected_japanese}")
+        print(f"Model:    {predicted_japanese}")
+        print("-" * 30)
+
+    
 
 if __name__ == "__main__":
     train_transformer()
