@@ -35,7 +35,7 @@ def train_transformer():
 
     for english, japanese in PAIRS:
         english_sentences.append(english)
-       japanese_sentences.append(japanese)
+        japanese_sentences.append(japanese)
 
     src_tokenizer.build_vocab(english_sentences)
     tgt_tokenizer.build_vocab(japanese_sentences)
@@ -84,7 +84,7 @@ def train_transformer():
     """
 
     loss_function = nn.CrossEntropyLoss(ignore_index=pad_id) #dont want the model to learn paddings
-    optimizer = torch.optim.Adam(model.parameter(), lr=LEARNING_RATE)
+    optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
     """
                      MODEL
@@ -117,33 +117,35 @@ def train_transformer():
 
     model.train()
 
-for epoch in range(EPOCHS):
-    total_loss = 0.0
+    for epoch in range(EPOCHS):
+        total_loss = 0.0
 
-    for batch in loader:
-        src = batch["src"].to(device)
-        tgt_input = batch["tgt_input"].to(device)
-        tgt_label = batch["tgt_label"].to(device)
-        src_mask = batch["src_mask"].to(device)
-        tgt_mask = batch["tgt_mask"].to(device)
+        for batch in loader:
+            src = batch["src"].to(device)
+            tgt_input = batch["tgt_input"].to(device)
+            tgt_label = batch["tgt_label"].to(device)
+            src_mask = batch["src_mask"].to(device)
+            tgt_mask = batch["tgt_mask"].to(device)
 
-        logits = model(src, tgt_input, src_mask, tgt_mask)
+            logits = model(src, tgt_input, src_mask, tgt_mask)
 
-        loss = loss_function(
-            logits.reshape(-1, logits.size(-1)),
-            tgt_label.reshape(-1),
-        )
+            loss = loss_function(
+                logits.reshape(-1, logits.size(-1)),
+                tgt_label.reshape(-1),
+            )
 
-        optimizer.zero_grad() #clear old gradienst
-        loss.backward() #calculate new loss gradients
-        optimizer.step() #redo the values
+            optimizer.zero_grad() #clear old gradienst
+            loss.backward() #calculate new loss gradients
+            optimizer.step() #redo the values
 
-        total_loss += loss.item()
+            total_loss += loss.item()
 
-    if (epoch + 1) % 20 == 0:
-        average_loss = total_loss / len(loader)
-        print(f"Epoch {epoch + 1}: loss = {average_loss:.4f}")
-
-
+        if (epoch + 1) % 20 == 0:
+            average_loss = total_loss / len(loader)
+            print(f"Epoch {epoch + 1}: loss = {average_loss:.4f}")
 
 
+
+
+if __name__ == "__main__":
+    train_transformer()
