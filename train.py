@@ -18,13 +18,15 @@ def train_transformer():
 
     MAX_SEQ_LEN = 20
     BATCH_SIZE = 16
-    D_MODEL = 512
-    NUM_HEADS = 8      # h = 8 heads
-    NUM_LAYERS = 6     # N = 6 layers (original paper uses 6, we use 3 for faster CPU training)
-    D_FF = 2048         # Feed-forward hidden dimension
-    DROPOUT = 0.1
-    LEARNING_RATE = 5e-4
-    EPOCHS = 60
+    # This data set has only about 100 short examples.  A 6-layer, 512-wide
+    # Transformer has far more parameters than it can train reliably here.
+    D_MODEL = 128
+    NUM_HEADS = 4
+    NUM_LAYERS = 2
+    D_FF = 256
+    DROPOUT = 0.0
+    LEARNING_RATE = 1e-3
+    EPOCHS = 100
 
 
     src_tokenizer = SimpleTokenizer()
@@ -140,7 +142,7 @@ def train_transformer():
 
             total_loss += loss.item()
 
-        if (epoch + 1) % 20 == 0:
+        if (epoch + 1) % 100 == 0:
             average_loss = total_loss / len(loader)
             print(f"Epoch {epoch + 1}: loss = {average_loss:.4f}")
 
